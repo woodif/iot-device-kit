@@ -7,7 +7,7 @@ module.exports = {
   author: "Maker Asia",
   website: "https://www.makerasia.com/",
   email: "makerasia@gmail.com",
-  git: "",
+  git: "https://github.com/woodif/iot-device-kit/",
   image: "/static/display.jpg",
   version: "1.0.0",
 };
