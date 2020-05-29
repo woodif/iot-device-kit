@@ -4,14 +4,31 @@
 #include <WiFiAP.h>
 #include <WebServer.h>
 
+#include "Adafruit_NeoPixel.h"
 #include "MQTT.h"
 #include "MqttConnector.h"
 #include "PubSubClient.h"
 
-int cmd;
-int relayPin = 15;
-int relayPinState = HIGH;
-int LED_PIN = 18;
+int payload;
+#define PIN 4
+#define NUMPIXELS 3
+Adafruit_NeoPixel pixels =
+    Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85) {
+    return pixels.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if (WheelPos < 170) {
+    WheelPos -= 85;
+    return pixels.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return pixels.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
+// int relayPin = 15;
+// int relayPinState = HIGH;
+// int LED_PIN = 18;
 static char myName[80];
 String DEVICE_NAME = "KB-001";
 String MQTT_HOST = "mqtt.cmmc.io";
@@ -29,10 +46,20 @@ void setup() {
   /* setup code */
   pinMode(23, OUTPUT);
   digitalWrite(23, 0);
-
+  pixels.begin();
   /* block setup */
   Serial.begin(115200);
-  WiFi.begin("ampere", "espertap");
+  pinMode(22, OUTPUT);
+
+  pixels.setBrightness(255);
+  pixels.show();
+
+  for (int clearPixel = 0; clearPixel < pixels.numPixels(); clearPixel++) {
+    pixels.setPixelColor(clearPixel, pixels.Color(0, 0, 0));
+    pixels.show();
+  }
+
+  WiFi.begin("CMMC_3BB_2.4GHz", "zxc12345");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
   }
@@ -49,7 +76,7 @@ void setup() {
   mqtt->on_subscribe([&](MQTT::Subscribe *sub) -> void {
     Serial.printf("myName = %s \r\n", myName);
     String t1 = MQTT_PREFIX + myName + "/$/+";
-    String t2 = MQTT_PREFIX + MQTT_CLIENT_ID + "/$/+";
+    String t2 = MQTT_PREFIX + myName + "/$/+";
     Serial.println("START TOPIC SUBS");
     Serial.println(t1);
     Serial.println(t2);
@@ -89,7 +116,30 @@ void setup() {
       [&](MqttConnector::Config config) -> void {});
 
   mqtt->on_after_message_arrived([&](String topic, String cmd, String payload) {
-    if (cmd == String("Hello World!")) {
+    Serial.println(payload);
+    if (payload == String("ON")) {
+      digitalWrite(22, 1);
+
+      uint16_t i, j;
+      for (j = 0; j < 256; j++) {
+        for (i = 0; i < pixels.numPixels(); i++) {
+          pixels.setPixelColor(i, Wheel((i + j) & 255));
+        }
+        pixels.show();
+        delay(20);
+      }
+    }
+    if (payload == String("OFF")) {
+      digitalWrite(22, 0);
+
+      pixels.setPixelColor(0, pixels.Color(0, 0, 0));
+      pixels.show();
+
+      pixels.setPixelColor(1, pixels.Color(0, 0, 0));
+      pixels.show();
+
+      pixels.setPixelColor(2, pixels.Color(0, 0, 0));
+      pixels.show();
     }
   });
 

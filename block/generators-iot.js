@@ -18,9 +18,9 @@ module.exports = function (Blockly) {
     
 
     #VARIABLE
-    int relayPin = 15; 
-    int relayPinState = HIGH;
-    int LED_PIN = 18;
+    // int relayPin = 15; 
+    // int relayPinState = HIGH;
+    // int LED_PIN = 18;
     static char myName[80];
     String DEVICE_NAME      = "${value_devicename}";
     String MQTT_HOST        = "${value_host}";
@@ -47,7 +47,7 @@ module.exports = function (Blockly) {
     mqtt->on_subscribe([&](MQTT::Subscribe *sub) -> void {
       Serial.printf("myName = %s \\r\\n", myName);
       String t1 = MQTT_PREFIX + myName + "/$/+";
-      String t2 = MQTT_PREFIX + MQTT_CLIENT_ID + "/$/+";
+      String t2 = MQTT_PREFIX + myName + "/$/+";
       Serial.println("START TOPIC SUBS");
       Serial.println(t1);
       Serial.println(t2);
