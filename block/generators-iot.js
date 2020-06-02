@@ -60,7 +60,7 @@ module.exports = function (Blockly) {
     mqtt->on_prepare_configuration([&](MqttConnector::Config *config) -> void {
       MQTT_CLIENT_ID = String(WiFi.macAddress());
       config->clientId  = MQTT_CLIENT_ID;
-      config->channelPrefix = MQTT_PREFIX;
+      config->channelPrefix = MQTT_PREFIX + String(myName) + "/";
       config->enableLastWill = true;
       config->retainPublishMessage = false;
       /*
